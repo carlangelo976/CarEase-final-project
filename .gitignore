@@ -5,6 +5,15 @@
 .env
 !.env.example
 
+# Local API credentials
+app/config/carease_oauth_local.php
+app/config/carease_calendar_local.php
+app/config/carease_email_local.php
+app/config/carease_paymongo_local.php
+app/config/carease_maps_local.php
+*service-account*.json
+*oauth-token*.json
+
 # Dependencies
 vendor/
 app/vendor/
@@ -17,6 +26,10 @@ runtime/*
 *.log
 *.cache
 
+# User uploads
+public/uploads/
+storage/
+
 # IDE
 .idea/
 .vscode/
@@ -24,3 +37,4 @@ runtime/*
 
 # OS
 Thumbs.db
+.env

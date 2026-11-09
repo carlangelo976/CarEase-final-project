@@ -5,19 +5,20 @@
 
     RewriteEngine On
 
-    # Handle Authorization Header
+    # Preserve Authorization header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Redirect Trailing Slashes If Not A Folder...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_URI} (.+)/$
-    RewriteRule ^ %1 [L,R=301]
+    # Route CarEase backend requests to LavaLust
+    RewriteRule ^carease(/.*)?$ index.php/carease$1 [L,QSA]
 
-    # Handle Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^(.*)$ index.php/$1 [L]
+    # Allow existing files and folders
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Route Vue frontend requests to index.html
+    RewriteRule ^ index.html [L]
 </IfModule>
 
 <FilesMatch "^(\.env|composer\.(json|lock)|package\.json|package-lock\.json|\.git)">

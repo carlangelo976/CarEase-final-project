@@ -81,6 +81,16 @@ $config['environment'] = getenv('APP_ENV') ?: 'development';
 */
 $config['base_url'] 				= '';
 
+// Resolve the public base URL automatically so assets and links keep working
+// when the app is served from a subdirectory (e.g. WAMP) or a virtual host.
+if (PHP_SAPI !== 'cli' && !empty($_SERVER['SCRIPT_NAME'])) {
+    $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+    $basePath = rtrim(str_replace('/index.php', '', $scriptPath), '/');
+    $scheme = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $config['base_url'] = $scheme . '://' . $host . $basePath . '/';
+}
+
 /*
 |--------------------------------------------------------------------------
 | Static File Proxies
@@ -266,7 +276,7 @@ $config['cookie_path']             = '/';
 $config['cookie_secure']           = FALSE;
 $config['cookie_expiration']       = 86400;
 $config['cookie_httponly']         = FALSE;
-$config['cookie_samesite']         = 'Strict';
+$config['cookie_samesite']         = 'Lax';
 
 /*
 |--------------------------------------------------------------------------
