@@ -237,10 +237,22 @@ if (php_sapi_name() === 'cli') {
     $method = 'GET';
     
 } else {
+    if (str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/carease/api/session')) {
+        header('Content-Type: application/json; charset=utf-8');
+
+        echo json_encode([
+            'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? null,
+            'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'] ?? null,
+            'PHP_SELF' => $_SERVER['PHP_SELF'] ?? null,
+            'PATH_INFO' => $_SERVER['PATH_INFO'] ?? null
+        ], JSON_PRETTY_PRINT);
+
+        exit;
+    }
+
     $url = $router->sanitize_url(str_replace($_SERVER['SCRIPT_NAME'], '', $_SERVER['PHP_SELF']));
     $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper($_SERVER['REQUEST_METHOD']) : 'GET';
 }
-
 if (empty($url)) $url = '/';
 
 $router->initiate($url, $method);
