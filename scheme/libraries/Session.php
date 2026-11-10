@@ -173,6 +173,23 @@ class Session {
 		{
 			$this->hmac_secret = $this->config['session_hmac_secret'];
 		}
+
+		// Configure PHP session storage before session_start()
+if (($this->config['sess_driver'] ?? 'file') === 'file') {
+    $savePath = $this->config['sess_save_path'] ?? '';
+
+    if ($savePath !== '') {
+        if (!is_dir($savePath)) {
+            mkdir($savePath, 0775, true);
+        }
+
+        if (!is_writable($savePath)) {
+            throw new RuntimeException('Session directory is not writable.');
+        }
+
+        session_save_path($savePath);
+    }
+}
          
         // Cookie name setup
         $prefix = $this->config['cookie_prefix'] ?? '';

@@ -3,7 +3,7 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 
 class CarEaseApi extends Controller
 {
-  public function __construct()
+ public function __construct()
 {
     parent::__construct();
     $this->call->model('CarEaseModel');
@@ -13,7 +13,6 @@ class CarEaseApi extends Controller
         session_start();
     }
 }
-
     private function respond($data, $code = 200)
     {
         $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
