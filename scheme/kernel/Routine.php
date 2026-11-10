@@ -186,31 +186,25 @@ if ( ! function_exists('_exception_handler'))
 	 */
 	function _exception_handler($e)
 	{
-		error_log(
-    '[CarEase PHP Exception] ' .
-    get_class($e) . ': ' .
-    $e->getMessage() .
-    ' in ' . $e->getFile() .
-    ':' . $e->getLine()
-);
+		// Log server-side only; do not expose sensitive exception details to visitors.
+		error_log('[CarEase PHP Exception] ' . get_class($e) . ': ' . $e->getMessage()
+			. ' in ' . $e->getFile() . ':' . $e->getLine());
 
-if (strtolower((string) config_item('environment')) !== 'development') {
-    http_response_code(500);
-}
-		if(config_item('log_threshold') == 1 || config_item('log_threshold') == 3)
-		{
-			$logger = load_class('logger', 'kernel');
-			$logger->log('error', get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
-		}
-		if (strtolower((string) config_item('environment')) === 'development')
-		{
+		$environment = strtolower((string) config_item('environment'));
+		if ($environment === 'development') {
 			$exception = load_class('Errors', 'kernel');
 			$exception->show_exception($e);
+			return;
 		}
-		
-	}
-}
 
+		if (!headers_sent()) {
+			http_response_code(500);
+			header('Content-Type: application/json; charset=utf-8');
+		}
+		echo json_encode(['error' => 'Internal server error']);
+	}
+
+}
 if ( ! function_exists('_error_handler'))
 {
 	/**
