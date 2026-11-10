@@ -174,23 +174,27 @@ class Session {
 			$this->hmac_secret = $this->config['session_hmac_secret'];
 		}
 
-		// Configure PHP session storage before session_start()
-if (($this->config['sess_driver'] ?? 'file') === 'file') {
-    $savePath = $this->config['sess_save_path'] ?? '';
+        // Use a writable, absolute PHP session directory on Render.
+        // Keep the configured local path for non-Render environments.
+        if (($this->config['sess_driver'] ?? 'file') === 'file') {
+            $isRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_ID') !== false;
+            $savePath = $isRender
+                ? rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'carease_php_sessions'
+                : (string)($this->config['sess_save_path'] ?? '');
 
-    if ($savePath !== '') {
-        if (!is_dir($savePath)) {
-            mkdir($savePath, 0775, true);
+            if ($savePath !== '') {
+                if (!is_dir($savePath) && !@mkdir($savePath, 0700, true) && !is_dir($savePath)) {
+                    throw new RuntimeException('Cannot create PHP session directory: ' . $savePath);
+                }
+                if (!is_writable($savePath)) {
+                    throw new RuntimeException('PHP session directory is not writable: ' . $savePath);
+                }
+                if (session_status() !== PHP_SESSION_ACTIVE) {
+                    session_save_path($savePath);
+                }
+            }
         }
 
-        if (!is_writable($savePath)) {
-            throw new RuntimeException('Session directory is not writable.');
-        }
-
-        session_save_path($savePath);
-    }
-}
-         
         // Cookie name setup
         $prefix = $this->config['cookie_prefix'] ?? '';
         $this->config['cookie_name'] = $prefix 
@@ -240,8 +244,15 @@ if (($this->config['sess_driver'] ?? 'file') === 'file') {
 
         // Start session
         $existing_session = !empty($_COOKIE[$this->config['cookie_name']]);
-        if (session_status() !== PHP_SESSION_ACTIVE && !session_start()) {
-            throw new RuntimeException('Unable to start PHP session. Check session storage permissions.');
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            if (!session_start()) {
+                $lastError = error_get_last();
+                $detail = is_array($lastError) ? ($lastError['message'] ?? 'unknown PHP error') : 'unknown PHP error';
+                error_log('[CarEase Session] session_start failed: ' . $detail
+                    . '; handler=' . ini_get('session.save_handler')
+                    . '; save_path=' . session_save_path());
+                throw new RuntimeException('Unable to start PHP session. Check Render application logs.');
+            }
         }
 
         // Track creation spikes without destroying an active session. Destroying
