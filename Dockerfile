@@ -18,3 +18,6 @@ RUN mkdir -p /var/www/html/runtime/session \
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
 RUN sed -i "s|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g" /etc/apache2/sites-available/000-default.conf
+
+# Serve Vue frontend from the website root
+RUN cp -a /var/www/html/public/vue/. /var/www/html/public/
