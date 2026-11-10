@@ -140,16 +140,7 @@ class CarEaseApi extends Controller
         $email = strtolower(trim((string) $this->io->post('email')));
         $password = (string) $this->io->post('password');
         $user = $this->CarEaseModel->userByEmail($email);
-        error_log('CAREASE LOGIN CHECK: ' . json_encode([
-    'user_found' => (bool) $user,
-    'user_id' => $user['id'] ?? null,
-    'hash_fingerprint' => $user
-        ? hash('sha256', (string) ($user['password_hash'] ?? ''))
-        : null,
-    'password_valid' => $user
-        ? password_verify($password, (string) ($user['password_hash'] ?? ''))
-        : false
-]));
+
 
         if (!$user || !password_verify($password, $user['password_hash'])) {
             $this->respond(['error' => 'Invalid email or password'], 401);

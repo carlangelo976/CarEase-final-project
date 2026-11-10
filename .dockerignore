@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+!.env.example
+**/node_modules
+**/vendor
+.vscode
+.idea
+runtime/**
+public/uploads/**
+app/config/carease_*_local.php
+*service-account*.json
+*oauth-token*.json
+*.log

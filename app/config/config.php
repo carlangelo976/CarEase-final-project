@@ -273,9 +273,9 @@ $config['session_hmac_secret'] = getenv('SESSION_HMAC_SECRET') ?: getenv('APP_KE
 $config['cookie_prefix']           = '';
 $config['cookie_domain']           = '';
 $config['cookie_path']             = '/';
-$config['cookie_secure']           = FALSE;
+$config['cookie_secure']           = (getenv('APP_ENV') === 'production' || (getenv('RENDER') === 'true'));
 $config['cookie_expiration']       = 86400;
-$config['cookie_httponly']         = FALSE;
+$config['cookie_httponly']         = TRUE;
 $config['cookie_samesite']         = 'Lax';
 
 /*

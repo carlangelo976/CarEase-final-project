@@ -240,15 +240,16 @@ if (($this->config['sess_driver'] ?? 'file') === 'file') {
 
         // Start session
         $existing_session = !empty($_COOKIE[$this->config['cookie_name']]);
-        session_start();
+        if (session_status() !== PHP_SESSION_ACTIVE && !session_start()) {
+            throw new RuntimeException('Unable to start PHP session. Check session storage permissions.');
+        }
 
+        // Track creation spikes without destroying an active session. Destroying
+        // it here prevented Set-Cookie from being sent, causing CSRF failures.
         if (!$existing_session && empty($_SESSION)) {
             $creation_msg = $this->security_track_session_creation($ip, $fingerprint);
             if ($creation_msg) {
-                // Soft block for creation flood - do not throw, just destroy and continue
-                session_destroy();
-                $_SESSION = [];
-                // We will detect this via get_security_status() later
+                error_log('[Session Security] Session creation limit reached.');
             }
         }
 
