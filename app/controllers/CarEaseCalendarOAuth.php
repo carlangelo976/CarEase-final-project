@@ -17,18 +17,32 @@ class CarEaseCalendarOAuth extends Controller
             exit('CarEase admin login required.');
         }
     }
-    private function cfg()
-    {
-        $path = __DIR__ . '/../config/carease_oauth_local.php';
-        if (!is_file($path))
-            throw new RuntimeException('Missing app/config/carease_oauth_local.php');
+   private function cfg()
+{
+    $path = __DIR__ . '/../config/carease_oauth_local.php';
+
+    // Use local configuration when available.
+    if (is_file($path)) {
         $c = require $path;
-        foreach (['client_id', 'client_secret', 'redirect_uri', 'calendar_id', 'token_file'] as $key) {
-            if (empty($c[$key]))
-                throw new RuntimeException('Missing OAuth configuration: ' . $key);
-        }
-        return $c;
+    } else {
+        // Use Render environment variables.
+        $c = [
+            'client_id' => getenv('GOOGLE_CLIENT_ID') ?: '',
+            'client_secret' => getenv('GOOGLE_CLIENT_SECRET') ?: '',
+            'redirect_uri' => getenv('GOOGLE_REDIRECT_URI') ?: '',
+            'calendar_id' => getenv('GOOGLE_CALENDAR_ID') ?: '',
+            'token_file' => '/var/www/html/runtime/google_calendar_token.json',
+        ];
     }
+
+    foreach (['client_id', 'client_secret', 'redirect_uri', 'calendar_id', 'token_file'] as $key) {
+        if (empty($c[$key])) {
+            throw new RuntimeException('Missing OAuth configuration: ' . $key);
+        }
+    }
+
+    return $c;
+}
     private function csrf()
     {
         if (empty($_SESSION['carease_csrf']))
