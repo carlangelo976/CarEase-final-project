@@ -61,9 +61,11 @@ if (file_exists(ROOT_DIR . '.env')) {
         if (strlen($value) >= 2 && in_array($value[0], ['"', "'"], true) && $value[-1] === $value[0]) {
             $value = substr($value, 1, -1);
         }
-
-        putenv("$key=$value");
-        $_ENV[$key] = $_SERVER[$key] = $value;
+        // Keep Render environment variables if already defined.
+        if (getenv($key) === false) {
+            putenv("$key=$value");
+            $_ENV[$key] = $_SERVER[$key] = $value;
+        }
     }
 }
 
