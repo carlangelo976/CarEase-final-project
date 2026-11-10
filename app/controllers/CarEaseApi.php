@@ -835,6 +835,21 @@ class CarEaseApi extends Controller
             }
             $transactionStarted = true;
 
+            // Serialize bookings for the same car inside this transaction.
+            if (!$this->CarEaseModel->lockCarForBooking($carId)) {
+                throw new RuntimeException('Unable to lock the selected car.');
+            }
+
+            // Recheck dates after acquiring the lock to prevent double bookings.
+            if (!$this->CarEaseModel->available($carId, $start, $end)) {
+                $this->CarEaseModel->rollbackBookingTransaction();
+                $transactionStarted = false;
+                $this->respond([
+                    'error' => 'This car is already reserved for the selected dates. Please choose other dates.'
+                ], 409);
+                return;
+            }
+
             $id = (int) $this->CarEaseModel->addBooking([
                 'user_id' => (int) $user['id'],
                 'car_id' => $carId,

@@ -92,6 +92,25 @@ class CarEaseModel extends Model
             ->delete();
     }
 
+
+    // Lock the selected car during booking.
+    public function lockCarForBooking($carId)
+    {
+        $carId = (int) $carId;
+
+        if ($carId <= 0) {
+            return false;
+        }
+
+        $query = $this->db->query(
+            'SELECT id FROM carease_cars WHERE id = ? FOR UPDATE',
+            [$carId]
+        );
+
+        return $query && $query->num_rows() === 1;
+    }
+
+
     // Use the same database connection for booking and contract writes.
     public function beginBookingTransaction()
     {
