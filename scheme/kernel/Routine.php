@@ -186,12 +186,23 @@ if ( ! function_exists('_exception_handler'))
 	 */
 	function _exception_handler($e)
 	{
+		error_log(
+    '[CarEase PHP Exception] ' .
+    get_class($e) . ': ' .
+    $e->getMessage() .
+    ' in ' . $e->getFile() .
+    ':' . $e->getLine()
+);
+
+if (strtolower((string) config_item('environment')) !== 'development') {
+    http_response_code(500);
+}
 		if(config_item('log_threshold') == 1 || config_item('log_threshold') == 3)
 		{
 			$logger = load_class('logger', 'kernel');
 			$logger->log('error', get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
 		}
-		if(strtolower(config_item('environment') == 'development'))
+		if (strtolower((string) config_item('environment')) === 'development')
 		{
 			$exception = load_class('Errors', 'kernel');
 			$exception->show_exception($e);
