@@ -1877,10 +1877,8 @@ class CarEaseApi extends Controller
 
     private function paymentRequest($method, $path, $body = null)
     {
-        $config = require __DIR__ .
-            '/../config/carease_paymongo_local.php';
-
-        $secretKey = $config['secret_key'] ?? '';
+        // Read the secret from Render environment variables, not a local file.
+        $secretKey = trim((string) (getenv('PAYMONGO_SECRET_KEY') ?: ''));
 
         if (strpos($secretKey, 'sk_test_') !== 0) {
             throw new RuntimeException(
@@ -2137,8 +2135,16 @@ class CarEaseApi extends Controller
                 return;
             }
 
-            $config = require __DIR__ . '/../config/carease_paymongo_local.php';
-            $returnUrl = 'https://carease.free.je/#/my-bookings';
+            // Use environment configuration so deployment does not require
+            // the ignored carease_paymongo_local.php file.
+            $methodsEnv = trim((string) (getenv('PAYMONGO_PAYMENT_METHOD_TYPES') ?: ''));
+            $paymentMethods = $methodsEnv !== ''
+                ? array_values(array_filter(array_map('trim', explode(',', $methodsEnv))))
+                : ['gcash', 'card'];
+            if (!$paymentMethods) {
+                throw new RuntimeException('No PayMongo payment methods configured.');
+            }
+            $returnUrl = 'https://carease.onrender.com/#/my-bookings';
             $payload = [
                 'data' => [
                     'attributes' => [
@@ -2150,7 +2156,7 @@ class CarEaseApi extends Controller
                                 'quantity' => 1
                             ]
                         ],
-                        'payment_method_types' => $config['payment_method_types'],
+                        'payment_method_types' => $paymentMethods,
                         'success_url' => $returnUrl,
                         'cancel_url' => $returnUrl,
                         'reference_number' => 'CAREASE-' . $id . '-' . bin2hex(random_bytes(4)),
