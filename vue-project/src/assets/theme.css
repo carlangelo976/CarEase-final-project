@@ -1,0 +1,298 @@
+/* ==========================================================================
+   CarEase Vue — dark mode + report helpers
+   The base design lives in carease.css (copied 1:1 from the PHP app).
+   ========================================================================== */
+
+.theme-toggle {
+    width: 42px;
+    height: 42px;
+    flex: none;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink-2);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease
+}
+
+.theme-toggle:hover {
+    background: var(--accent-050);
+    border-color: var(--accent-100);
+    color: var(--accent);
+    transform: translateY(-1px)
+}
+
+html[data-theme="dark"] .site-header .theme-toggle {
+    border-color: rgba(255, 255, 255, .16);
+    background: rgba(255, 255, 255, .06);
+    color: var(--ink)
+}
+
+html[data-theme="dark"] .site-header .theme-toggle:hover {
+    background: rgba(255, 255, 255, .12);
+    border-color: rgba(255, 255, 255, .24);
+    color: var(--accent)
+}
+
+.theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor
+}
+
+.app-topbar .theme-toggle {
+    border-color: var(--line);
+    background: var(--card);
+    color: var(--ink)
+}
+
+.app-topbar .theme-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--card)
+}
+
+/* ==========================================================================
+   Reports (markup mirrors app/views/carease/reports.php)
+   ========================================================================== */
+
+.ce-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin: 18px 0
+}
+
+.ce-report-card {
+    background: #fff;
+    border: 1px solid #dce5ef;
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 0
+}
+
+.ce-report-card h3 {
+    margin: 0 0 12px;
+    color: #204d75;
+    font-size: 17px
+}
+
+.ce-report-chart {
+    position: relative;
+    height: 260px
+}
+
+.ce-report-chart.tall {
+    height: 300px
+}
+
+.ce-report-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px
+}
+
+.ce-report-stat {
+    padding: 16px;
+    border-radius: 10px;
+    background: #eaf3fb;
+    color: #204d75
+}
+
+.ce-report-stat strong {
+    display: block;
+    font-size: 22px;
+    overflow-wrap: anywhere
+}
+
+.ce-report-stat span {
+    font-size: 12px
+}
+
+.ce-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px
+}
+
+.ce-report-table th,
+.ce-report-table td {
+    border-bottom: 1px solid #e1e7ed;
+    padding: 9px;
+    text-align: left
+}
+
+.ce-report-filter {
+    display: flex;
+    gap: 10px;
+    align-items: end;
+    flex-wrap: wrap;
+    margin-top: 12px
+}
+
+.ce-report-filter label {
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 0
+}
+
+.ce-report-filter input {
+    padding: 8px;
+    border: 1px solid #b9c8d6;
+    border-radius: 6px;
+    margin: 0
+}
+
+@media(max-width:750px) {
+    .ce-report-grid {
+        grid-template-columns: 1fr
+    }
+
+    .ce-report-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+}
+
+/* ==========================================================================
+   Dark theme
+   ========================================================================== */
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --navy-950: #030B14;
+    --navy-900: #061525;
+    --navy-850: #091D31;
+    --navy-800: #0C2540;
+    --navy-700: #123454;
+    --navy-600: #1B476D;
+    --navy-500: #275A86;
+
+    --surface: #081320;
+    --surface-2: #0D1B2A;
+    --card: #101F30;
+    --line: #213549;
+    --line-soft: #1A2B3D;
+
+    --ink: #E8F0F8;
+    --ink-2: #C6D3E1;
+    --muted: #95A7BB;
+    --muted-2: #76899E;
+
+    --accent-050: rgba(252, 106, 46, .14);
+    --accent-100: rgba(252, 106, 46, .28);
+
+    --sh-xs: 0 2px 8px rgba(0, 0, 0, .30);
+    --sh-sm: 0 10px 26px rgba(0, 0, 0, .36);
+    --sh: 0 18px 46px rgba(0, 0, 0, .46);
+    --sh-lg: 0 32px 84px rgba(0, 0, 0, .60);
+}
+
+html[data-theme="dark"] body {
+    background: var(--surface)
+}
+
+html[data-theme="dark"] .app-topbar {
+    background: rgba(8, 19, 32, .82)
+}
+
+html[data-theme="dark"] .app-menu-btn {
+    background: var(--card)
+}
+
+html[data-theme="dark"] .pill {
+    background: rgba(252, 106, 46, .18);
+    color: #FFB48C
+}
+
+html[data-theme="dark"] .car-tag {
+    background: rgba(252, 106, 46, .18);
+    color: #FFB48C
+}
+
+html[data-theme="dark"] .error {
+    background: rgba(155, 28, 28, .22);
+    color: #FCA5A5;
+    border-color: rgba(239, 68, 68, .38)
+}
+
+html[data-theme="dark"] .danger {
+    background: rgba(155, 28, 28, .22);
+    color: #FCA5A5
+}
+
+html[data-theme="dark"] .danger:hover {
+    background: rgba(155, 28, 28, .34)
+}
+
+html[data-theme="dark"] .gcal-hint strong {
+    color: var(--accent)
+}
+
+html[data-theme="dark"] .ce-report-card {
+    background: var(--card);
+    border-color: var(--line)
+}
+
+html[data-theme="dark"] .ce-report-card h3 {
+    color: #FFB48C
+}
+
+html[data-theme="dark"] .ce-report-stat {
+    background: var(--accent-050);
+    color: var(--ink)
+}
+
+html[data-theme="dark"] .ce-report-table th,
+html[data-theme="dark"] .ce-report-table td {
+    border-bottom-color: var(--line-soft)
+}
+
+html[data-theme="dark"] .ce-report-filter input {
+    border-color: var(--line);
+    background: var(--card);
+    color: var(--ink)
+}
+
+html[data-theme="dark"] .car-media:not(.is-dark) {
+    background: linear-gradient(160deg, #1A2A3C 0%, #142334 55%, #101E2D 100%)
+}
+
+html[data-theme="dark"] .car-media:not(.is-dark) .car-art .car-body {
+    fill: #E9F0F7
+}
+
+html[data-theme="dark"] .car-media:not(.is-dark) .car-art .car-glass {
+    fill: #35485C
+}
+
+html[data-theme="dark"] .car-media:not(.is-dark) .car-art .car-wheel {
+    fill: #0A1522
+}
+
+html[data-theme="dark"] .car-media:not(.is-dark) .car-art .car-hub {
+    fill: #7A8DA0
+}
+
+html[data-theme="dark"] .search-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .narrow,
+html[data-theme="dark"] .stats>div,
+html[data-theme="dark"] .review,
+html[data-theme="dark"] .step,
+html[data-theme="dark"] .feature-card,
+html[data-theme="dark"] .car-card,
+html[data-theme="dark"] .mini-car,
+html[data-theme="dark"] .calendar-panel,
+html[data-theme="dark"] .ce-report-card {
+    border-color: var(--line)
+}
+
+html[data-theme="dark"] .upload-control input[type=file]::file-selector-button {
+    color: var(--ink)
+}
