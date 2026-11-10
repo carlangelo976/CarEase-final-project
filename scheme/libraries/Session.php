@@ -188,9 +188,11 @@ class Session {
                 if (!is_writable($savePath)) {
                     throw new RuntimeException('PHP session directory is not writable: ' . $savePath);
                 }
-                if (session_save_path($savePath) === false) {
-                    throw new RuntimeException('Unable to configure PHP session save path.');
-                }
+             session_save_path($savePath);
+
+if (session_save_path() !== $savePath) {
+    throw new RuntimeException('PHP session save path was not applied.');
+}
             }
         }
 
