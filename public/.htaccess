@@ -1,3 +1,5 @@
+DirectoryIndex index.html index.php
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
@@ -5,22 +7,20 @@
 
     RewriteEngine On
 
-    # Serve the Vue homepage at the root URL
-RewriteRule ^$ /vue/index.html [END]
-
+    # Preserve authorization headers
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Route CarEase backend requests to LavaLust
+    # CarEase PHP backend API
     RewriteRule ^carease(/.*)?$ index.php?carease_route=carease$1 [END,QSA]
 
     # Allow existing files and folders
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
+    RewriteRule ^ - [END]
 
-    # Route Vue frontend requests
-    RewriteRule ^ index.html [L]
+    # Vue frontend routes
+    RewriteRule ^ index.html [END]
 </IfModule>
 
 <FilesMatch "^(\.env|composer\.(json|lock)|package\.json|package-lock\.json|\.git)">
