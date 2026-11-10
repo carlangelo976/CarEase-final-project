@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Serve the Vue homepage at the root URL
+RewriteRule ^$ /vue/index.html [END]
+
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
