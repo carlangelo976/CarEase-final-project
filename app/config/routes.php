@@ -10,7 +10,8 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 // =====================================================
 
 $router->get('/', function () {
-    redirect('carease/login');
+    header('Location: /#/', true, 302);
+    exit;
 });
 
 $router->get('/users', 'UserController::index');
@@ -159,10 +160,11 @@ $router->match(
 // CAREASE MODULE
 // =====================================================
 
-$router->get(
-    '/carease',
-    'CarEase::index'
-);
+// Legacy entry point: show the Vue interface.
+$router->get('/carease', function () {
+    header('Location: /#/', true, 302);
+    exit;
+});
 
 $router->match(
     '/carease/book/{id}',
@@ -213,10 +215,11 @@ $router->match(
 // CAREASE ADMIN
 // =====================================================
 
-$router->get(
-    '/carease/admin',
-    'CarEase::dashboard'
-);
+// Legacy admin URL: use the Vue admin dashboard.
+$router->get('/carease/admin', function () {
+    header('Location: /#/admin', true, 302);
+    exit;
+});
 
 $router->match(
     '/carease/admin/id/{id}',
@@ -247,17 +250,19 @@ $router->match(
 // CAREASE AUTHENTICATION
 // =====================================================
 
-$router->match(
-    '/carease/login',
-    'CarEase::login',
-    ['GET', 'POST']
-);
+// GET opens Vue login; keep legacy POST handler for compatibility.
+$router->get('/carease/login', function () {
+    header('Location: /#/login', true, 302);
+    exit;
+});
+$router->match('/carease/login', 'CarEase::login', ['POST']);
 
-$router->match(
-    '/carease/register',
-    'CarEase::register',
-    ['GET', 'POST']
-);
+// GET opens Vue registration; keep legacy POST handler for compatibility.
+$router->get('/carease/register', function () {
+    header('Location: /#/register', true, 302);
+    exit;
+});
+$router->match('/carease/register', 'CarEase::register', ['POST']);
 
 $router->match(
     '/carease/logout',
