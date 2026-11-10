@@ -8,6 +8,8 @@
 .idea
 runtime/**
 public/uploads/**
+!public/uploads/carease
+!public/uploads/carease/*.jpg
 app/config/carease_*_local.php
 *service-account*.json
 *oauth-token*.json
