@@ -197,7 +197,12 @@ async function handlePay(id: number) {
       return
     }
 
-    // payNow handles the PayMongo redirect.
+    if (result?.checkoutUrl) {
+      window.location.assign(result.checkoutUrl)
+      return
+    }
+
+    notice.value = 'PayMongo did not return a checkout link. Please try again without creating another booking.'
   } catch (error) {
     notice.value =
       error instanceof Error
