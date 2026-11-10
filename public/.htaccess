@@ -5,19 +5,18 @@
 
     RewriteEngine On
 
-    # Preserve Authorization header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # Route CarEase backend requests to LavaLust
-    RewriteRule ^carease(/.*)?$ index.php/carease$1 [L,QSA]
+    RewriteRule ^carease(/.*)?$ index.php?carease_route=carease$1 [END,QSA]
 
     # Allow existing files and folders
     RewriteCond %{REQUEST_FILENAME} -f [OR]
     RewriteCond %{REQUEST_FILENAME} -d
     RewriteRule ^ - [L]
 
-    # Route Vue frontend requests to index.html
+    # Route Vue frontend requests
     RewriteRule ^ index.html [L]
 </IfModule>
 
