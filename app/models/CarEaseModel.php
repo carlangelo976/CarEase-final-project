@@ -93,7 +93,10 @@ class CarEaseModel extends Model
     }
 
 
-    // Lock the selected car during booking.
+    // Confirm that the selected car exists using the supported query builder.
+    // IMPORTANT: This is not a SELECT ... FOR UPDATE row lock.
+    // The booking controller still rechecks availability inside its transaction,
+    // but simultaneous requests need a verified database-level locking strategy.
     public function lockCarForBooking($carId)
     {
         $carId = (int) $carId;
@@ -102,12 +105,11 @@ class CarEaseModel extends Model
             return false;
         }
 
-        $query = $this->db->query(
-            'SELECT id FROM carease_cars WHERE id = ? FOR UPDATE',
-            [$carId]
-        );
+        $car = $this->db->table('carease_cars')
+            ->where('id', $carId)
+            ->get();
 
-        return $query && $query->num_rows() === 1;
+        return !empty($car);
     }
 
 
