@@ -3,15 +3,16 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 
 class CarEaseApi extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-        $this->call->model('CarEaseModel');
+  public function __construct()
+{
+    parent::__construct();
+    $this->call->model('CarEaseModel');
 
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_name('LLSession');
+        session_start();
     }
+}
 
     private function respond($data, $code = 200)
     {
