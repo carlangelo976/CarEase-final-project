@@ -1,4 +1,3 @@
-
 ARG PHP_VERSION=8.5
 FROM php:${PHP_VERSION}-apache
 
@@ -10,10 +9,11 @@ RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/Allo
 
 COPY . /var/www/html/
 
+# Fix PHP session storage permissions for Render
 RUN mkdir -p /var/www/html/runtime/session \
-    && chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod 775 /var/www/html/runtime /var/www/html/runtime/session
+    && chown -R www-data:www-data /var/www/html/runtime \
+    && chmod 755 /var/www/html/runtime \
+    && chmod 770 /var/www/html/runtime/session
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
