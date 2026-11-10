@@ -174,9 +174,8 @@ class Session {
 			$this->hmac_secret = $this->config['session_hmac_secret'];
 		}
 
-        // Use a writable, absolute PHP session directory on Render.
-        // Keep the configured local path for non-Render environments.
-        if (($this->config['sess_driver'] ?? 'file') === 'file') {
+        // Configure the file session handler once, before session_start().
+        if (($this->config['sess_driver'] ?? 'file') === 'file' && session_status() !== PHP_SESSION_ACTIVE) {
             $isRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_ID') !== false;
             $savePath = $isRender
                 ? rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'carease_php_sessions'
@@ -189,8 +188,8 @@ class Session {
                 if (!is_writable($savePath)) {
                     throw new RuntimeException('PHP session directory is not writable: ' . $savePath);
                 }
-                if (session_status() !== PHP_SESSION_ACTIVE) {
-                    session_save_path($savePath);
+                if (session_save_path($savePath) === false) {
+                    throw new RuntimeException('Unable to configure PHP session save path.');
                 }
             }
         }
@@ -242,23 +241,22 @@ class Session {
 		//check lock
         $this->security_check_lock($ip, $fingerprint);
 
-		// Configure writable session storage on Render
-if (session_status() !== PHP_SESSION_ACTIVE) {
-    $sessionDir = '/var/www/html/runtime/session';
-
-    if (is_dir($sessionDir) && is_writable($sessionDir)) {
-        session_save_path($sessionDir);
-    } else {
-        error_log('[CarEase Session] Session directory missing or not writable: ' . $sessionDir);
-    }
-}
-        // Start session
+        // Start PHP session before accessing $_SESSION.
         $existing_session = !empty($_COOKIE[$this->config['cookie_name']]);
         if (session_status() !== PHP_SESSION_ACTIVE) {
-            if (!session_start()) {
-                $lastError = error_get_last();
-                $detail = is_array($lastError) ? ($lastError['message'] ?? 'unknown PHP error') : 'unknown PHP error';
-                error_log('[CarEase Session] session_start failed: ' . $detail
+            $sessionWarning = null;
+            set_error_handler(static function ($severity, $message) use (&$sessionWarning) {
+                $sessionWarning = $message;
+                return true;
+            });
+            try {
+                $started = session_start();
+            } finally {
+                restore_error_handler();
+            }
+            if (!$started) {
+                error_log('[CarEase Session] session_start failed: '
+                    . ($sessionWarning ?? 'no PHP warning captured')
                     . '; handler=' . ini_get('session.save_handler')
                     . '; save_path=' . session_save_path());
                 throw new RuntimeException('Unable to start PHP session. Check Render application logs.');
