@@ -21,3 +21,10 @@ RUN sed -i "s|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|g" /e
 
 # Serve Vue frontend from the website root
 RUN cp -a /var/www/html/public/vue/. /var/www/html/public/
+
+# Configure PHP session storage before application startup
+RUN mkdir -p /var/www/html/runtime/session \
+    && chown -R www-data:www-data /var/www/html/runtime \
+    && chmod 770 /var/www/html/runtime/session \
+    && printf 'session.save_handler=files\nsession.save_path="/var/www/html/runtime/session"\n' \
+       > /usr/local/etc/php/conf.d/carease-session.ini

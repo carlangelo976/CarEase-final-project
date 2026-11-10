@@ -177,9 +177,9 @@ class Session {
         // Configure the file session handler once, before session_start().
         if (($this->config['sess_driver'] ?? 'file') === 'file' && session_status() !== PHP_SESSION_ACTIVE) {
             $isRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_ID') !== false;
-            $savePath = $isRender
-                ? rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'carease_php_sessions'
-                : (string)($this->config['sess_save_path'] ?? '');
+          $savePath = $isRender
+    ? '/var/www/html/runtime/session'
+    : (string)($this->config['sess_save_path'] ?? '');
 
             if ($savePath !== '') {
                 if (!is_dir($savePath) && !@mkdir($savePath, 0700, true) && !is_dir($savePath)) {
