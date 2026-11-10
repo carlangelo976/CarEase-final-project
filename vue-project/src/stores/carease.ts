@@ -696,7 +696,6 @@ export async function payNow(
     ) {
       return { error: 'Invalid PayMongo checkout URL.' }
     }
-    window.location.assign(url.href)
     return { checkoutUrl: url.href }
   } catch (error: unknown) {
     return {

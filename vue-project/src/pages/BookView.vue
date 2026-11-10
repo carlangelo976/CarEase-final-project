@@ -899,6 +899,20 @@ onMounted(async () => {
           PayMongo to pay the 30% downpayment.
         </p>
 
+        <!-- Show exactly which requirement is preventing submission. -->
+        <div class="booking-requirements" aria-live="polite">
+          <strong>Booking Requirements</strong>
+          <p :class="currentUser ? 'requirement-ok' : 'requirement-missing'">{{ currentUser ? '✓' : '✗' }} Logged-in account</p>
+          <p :class="!checkingId && idStatus === 'verified' ? 'requirement-ok' : 'requirement-missing'">{{ !checkingId && idStatus === 'verified' ? '✓' : '✗' }} Verified Valid ID{{ checkingId ? ' (checking...)' : '' }}</p>
+          <p :class="/^[0-9+() -]{7,20}$/.test(phone.trim()) ? 'requirement-ok' : 'requirement-missing'">{{ /^[0-9+() -]{7,20}$/.test(phone.trim()) ? '✓' : '✗' }} Valid contact number</p>
+          <p :class="pickupLocation ? 'requirement-ok' : 'requirement-missing'">{{ pickupLocation ? '✓' : '✗' }} Pickup location selected on map</p>
+          <p :class="dropoffLocation ? 'requirement-ok' : 'requirement-missing'">{{ dropoffLocation ? '✓' : '✗' }} Drop-off location selected on map</p>
+          <p :class="!loadingDates && pickupDate && returnDate && !dateError && totalAmount > 0 ? 'requirement-ok' : 'requirement-missing'">{{ !loadingDates && pickupDate && returnDate && !dateError && totalAmount > 0 ? '✓' : '✗' }} Valid rental dates{{ loadingDates ? ' (loading...)' : '' }}</p>
+          <p :class="signatureImage ? 'requirement-ok' : 'requirement-missing'">{{ signatureImage ? '✓' : '✗' }} Customer signature</p>
+          <p :class="agreementAccepted ? 'requirement-ok' : 'requirement-missing'">{{ agreementAccepted ? '✓' : '✗' }} Rental agreement accepted</p>
+          <p v-if="submitting" class="muted">Processing booking and payment. Please wait...</p>
+        </div>
+
         <button
           class="button"
           type="submit"
@@ -943,6 +957,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.booking-requirements { margin: 16px 0; padding: 16px; border: 1px solid #d8dce4; border-radius: 12px; background: #fafbfc; }
+.booking-requirements strong { display: block; margin-bottom: 10px; }
+.booking-requirements p { margin: 5px 0; font-size: 0.94rem; }
+.requirement-ok { color: #20744b; }
+.requirement-missing { color: #a04432; }
 .id-warning { margin: 16px 0; padding: 16px; border: 1px solid #d9b46b; border-radius: 8px; background: #fffaf0; }
 .id-warning p { margin: 8px 0; }
 .rental-calendar {
