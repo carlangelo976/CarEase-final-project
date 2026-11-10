@@ -259,7 +259,7 @@ $config['creation_window']         = 60;
 $config['lock_duration_creation']  = 120;
 $config['security_file']           = ROOT_DIR . 'runtime/session/session_security.json';
 $config['sess_inactivity_timeout'] = 1800;
-$config['session_hmac_secret']     = getenv('SESSION_HMAC_SECRET') ?: (getenv('APP_KEY') ?: '');
+$config['session_hmac_secret'] = getenv('SESSION_HMAC_SECRET') ?: getenv('APP_KEY') ?: '';
 
 /*
 |--------------------------------------------------------------------------
