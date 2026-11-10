@@ -174,12 +174,14 @@ class Session {
 			$this->hmac_secret = $this->config['session_hmac_secret'];
 		}
 
-        // Configure the file session handler once, before session_start().
-        if (($this->config['sess_driver'] ?? 'file') === 'file' && session_status() !== PHP_SESSION_ACTIVE) {
+        // Configure file sessions before session_start(). On Render, the
+        // Docker PHP ini file already supplies this path. Avoid resetting it.
+        if (($this->config['sess_driver'] ?? 'file') === 'file'
+            && session_status() !== PHP_SESSION_ACTIVE) {
             $isRender = getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_ID') !== false;
-          $savePath = $isRender
-    ? '/var/www/html/runtime/session'
-    : (string)($this->config['sess_save_path'] ?? '');
+            $savePath = $isRender
+                ? '/var/www/html/runtime/session'
+                : (string)($this->config['sess_save_path'] ?? '');
 
             if ($savePath !== '') {
                 if (!is_dir($savePath) && !@mkdir($savePath, 0700, true) && !is_dir($savePath)) {
@@ -188,11 +190,33 @@ class Session {
                 if (!is_writable($savePath)) {
                     throw new RuntimeException('PHP session directory is not writable: ' . $savePath);
                 }
-             session_save_path($savePath);
 
-if (session_save_path() !== $savePath) {
-    throw new RuntimeException('PHP session save path was not applied.');
-}
+                // session_save_path() returns the PREVIOUS path, not a success flag.
+                // Capture warnings so a failed configuration is diagnosable.
+                if (session_save_path() !== $savePath) {
+                    $pathWarning = null;
+                    set_error_handler(static function ($severity, $message) use (&$pathWarning) {
+                        $pathWarning = $message;
+                        return true;
+                    });
+                    try {
+                        session_save_path($savePath);
+                    } finally {
+                        restore_error_handler();
+                    }
+                    if (session_save_path() !== $savePath) {
+                        $sourceFile = '';
+                        $sourceLine = 0;
+                        $headersAlreadySent = headers_sent($sourceFile, $sourceLine);
+                        error_log('[CarEase Session] Cannot apply session path: '
+                            . ($pathWarning ?? 'no PHP warning captured')
+                            . '; actual=' . session_save_path()
+                            . '; expected=' . $savePath
+                            . '; headers_sent=' . ($headersAlreadySent ? 'yes' : 'no')
+                            . ($headersAlreadySent ? '; output_at=' . $sourceFile . ':' . $sourceLine : ''));
+                        throw new RuntimeException('PHP session configuration failed; check Render logs.');
+                    }
+                }
             }
         }
 
