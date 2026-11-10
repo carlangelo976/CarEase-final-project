@@ -81,12 +81,33 @@ $config['environment'] = getenv('APP_ENV') ?: 'development';
 */
 $config['base_url'] 				= '';
 
+// Explicit public base URL for deployments behind a TLS-terminating proxy
+// (e.g. Render). Set APP_BASE_URL=https://your-host in the environment; when
+// present it is used verbatim and the auto-detection below is skipped.
+if (getenv('APP_BASE_URL')) {
+    $config['base_url'] = getenv('APP_BASE_URL');
+}
+
 // Resolve the public base URL automatically so assets and links keep working
 // when the app is served from a subdirectory (e.g. WAMP) or a virtual host.
-if (PHP_SAPI !== 'cli' && !empty($_SERVER['SCRIPT_NAME'])) {
+if ($config['base_url'] === '' && PHP_SAPI !== 'cli' && !empty($_SERVER['SCRIPT_NAME'])) {
     $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
     $basePath = rtrim(str_replace('/index.php', '', $scriptPath), '/');
     $scheme = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off') ? 'https' : 'http';
+
+    // Render terminates TLS at its edge, so the origin sees plain HTTP and
+    // $_SERVER['HTTPS'] is empty. Honour X-Forwarded-Proto only when the
+    // platform markers prove we run behind Render's trusted proxy; never
+    // trust this header from arbitrary clients on other deployments.
+    if ($scheme === 'http'
+        && (getenv('RENDER') === 'true' || getenv('RENDER_SERVICE_ID') !== false)
+    ) {
+        $forwarded = strtolower(trim(explode(',', (string) ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+        if ($forwarded === 'https') {
+            $scheme = 'https';
+        }
+    }
+
     $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
     $config['base_url'] = $scheme . '://' . $host . $basePath . '/';
 }
