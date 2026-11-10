@@ -242,6 +242,16 @@ class Session {
 		//check lock
         $this->security_check_lock($ip, $fingerprint);
 
+		// Configure writable session storage on Render
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    $sessionDir = '/var/www/html/runtime/session';
+
+    if (is_dir($sessionDir) && is_writable($sessionDir)) {
+        session_save_path($sessionDir);
+    } else {
+        error_log('[CarEase Session] Session directory missing or not writable: ' . $sessionDir);
+    }
+}
         // Start session
         $existing_session = !empty($_COOKIE[$this->config['cookie_name']]);
         if (session_status() !== PHP_SESSION_ACTIVE) {
