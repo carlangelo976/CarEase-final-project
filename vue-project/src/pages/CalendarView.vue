@@ -33,7 +33,7 @@ const gcalUrl =
   encodeURIComponent(
     '1a6d16e669c118eb7b23d449d5910d4b5a9bf4cbb6b3e1469c86a41769d5ee04@group.calendar.google.com',
   ) +
-  '&mode=MONTH&showTitle=0&showPrint=0&showCalendars=0&wkst=1&bgcolor=%23ffffff&timezone=Asia%2FManila'
+  '&mode=MONTH&showTitle=0&showPrint=0&showCalendars=0&wkst=1&bgcolor=%23ffffff&ctz=Asia%2FManila'
 
 const connectUrl = `${BACKEND_BASE}/carease/calendar-oauth/connect`
 const loginUrl = `${BACKEND_BASE}/carease/login`
