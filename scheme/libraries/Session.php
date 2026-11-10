@@ -267,6 +267,17 @@ class Session {
 		//check lock
         $this->security_check_lock($ip, $fingerprint);
 
+        // Diagnose premature output without exposing credentials or session data.
+        // Render logs will identify the exact source file and line if headers
+        // were sent before PHP could start the session.
+        $outputFile = '';
+        $outputLine = 0;
+        if (headers_sent($outputFile, $outputLine)) {
+            error_log('[CarEase Headers Debug] Output started in '
+                . ($outputFile !== '' ? $outputFile : '[unknown]')
+                . ' at line ' . $outputLine);
+        }
+
         // Start PHP session before accessing $_SESSION.
         $existing_session = !empty($_COOKIE[$this->config['cookie_name']]);
         if (session_status() !== PHP_SESSION_ACTIVE) {
@@ -1009,5 +1020,3 @@ class Session {
     }
 
 }
-
-?>
