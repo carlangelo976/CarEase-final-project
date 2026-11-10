@@ -9,18 +9,21 @@ defined('PREVENT_DIRECT_ACCESS') OR exit('No direct script access allowed');
 class CarEaseGoogleCalendar
 {
     /**
-     * Loads app/config/carease_oauth_local.php when it exists.
+     * Loads app/config/carease_oauth_local.php when it exists, otherwise
+     * falls back to the GOOGLE_CALENDAR_ID environment variable (Render).
      *
      * @return array|null
      */
     public static function config()
     {
         $path = __DIR__ . '/../config/carease_oauth_local.php';
-        if (!is_file($path))
-            return null;
+        if (is_file($path)) {
+            $cfg = require $path;
+            return empty($cfg['calendar_id']) ? null : $cfg;
+        }
 
-        $cfg = require $path;
-        return empty($cfg['calendar_id']) ? null : $cfg;
+        $calendar_id = getenv('GOOGLE_CALENDAR_ID') ?: '';
+        return $calendar_id === '' ? null : ['calendar_id' => $calendar_id];
     }
 
     /**

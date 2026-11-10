@@ -9,9 +9,21 @@ class CarEaseCalendarSync
     public function __construct()
     {
         $path = __DIR__ . '/../config/carease_oauth_local.php';
-        if (!is_file($path))
-            throw new RuntimeException('Missing app/config/carease_oauth_local.php');
-        $cfg = require $path;
+
+        // Use local configuration when available (local WAMP development).
+        if (is_file($path)) {
+            $cfg = require $path;
+        } else {
+            // Use Render environment variables. The token file matches
+            // CarEaseCalendarOAuth so both share the same connection.
+            $cfg = [
+                'client_id' => getenv('GOOGLE_CLIENT_ID') ?: '',
+                'client_secret' => getenv('GOOGLE_CLIENT_SECRET') ?: '',
+                'calendar_id' => getenv('GOOGLE_CALENDAR_ID') ?: '',
+                'token_file' => '/var/www/html/runtime/google_calendar_token.json',
+            ];
+        }
+
         foreach (['client_id', 'client_secret', 'calendar_id', 'token_file'] as $key) {
             if (empty($cfg[$key]))
                 throw new RuntimeException('Missing OAuth configuration: ' . $key);
@@ -222,15 +234,22 @@ public function findOrphanedEvents(array $validBookingIds)
             throw new RuntimeException('Enable PHP cURL in WAMP.');
 
         $ch = curl_init($url);
-       curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_TIMEOUT => 30,
-    CURLOPT_CUSTOMREQUEST => $method,
-    CURLOPT_HTTPHEADER => $headers,
-    CURLOPT_CAINFO => 'C:/wamp64/certs/cacert.pem',
-    CURLOPT_SSL_VERIFYPEER => true,
-    CURLOPT_SSL_VERIFYHOST => 2,
-]);
+        $options = [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_HTTPHEADER => $headers,
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+        ];
+
+        // Only pin the custom CA bundle when it exists (local WAMP); otherwise
+        // cURL uses the system CA bundle shipped with the PHP Docker image.
+        if (is_file('C:/wamp64/certs/cacert.pem')) {
+            $options[CURLOPT_CAINFO] = 'C:/wamp64/certs/cacert.pem';
+        }
+
+        curl_setopt_array($ch, $options);
         if ($body !== null)
             curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 
