@@ -83,5 +83,19 @@ define('PUBLIC_DIR', $public_folder);
  * Setup done? Then Hurray!
  * ------------------------------------------------------
  */
+if (str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/carease/api/session')) {
+    header('Content-Type: application/json; charset=utf-8');
+
+    echo json_encode([
+        'test' => 'Reached public/index.php',
+        'REQUEST_URI' => $_SERVER['REQUEST_URI'] ?? null,
+        'SCRIPT_NAME' => $_SERVER['SCRIPT_NAME'] ?? null,
+        'PHP_SELF' => $_SERVER['PHP_SELF'] ?? null,
+        'PATH_INFO' => $_SERVER['PATH_INFO'] ?? null
+    ], JSON_PRETTY_PRINT);
+
+    exit;
+}
+
 require_once SYSTEM_DIR . 'kernel/LavaLust.php';
 ?>
