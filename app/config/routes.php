@@ -383,6 +383,11 @@ $router->get(
 );
 
 $router->get(
+    '/carease/admin/reports/annual-pdf',
+    'CarEaseReports::annualPdf'
+);
+
+$router->get(
     '/carease/admin/reports/export',
     'CarEaseReports::export'
 );

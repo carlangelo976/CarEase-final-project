@@ -983,7 +983,7 @@ function inspectionAvailable(
                       :disabled="Boolean(updatingBookings[booking.id])"
                     >
                       <option
-                        v-for="choice in statusChoices(booking.status)"
+                        v-for="choice in statusChoices(booking.status).filter(choice => choice !== 'completed' || returnRequestStatus(booking) === 'pending')"
                         :key="choice"
                         :value="choice"
                       >

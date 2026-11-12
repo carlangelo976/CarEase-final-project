@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import {
@@ -551,7 +550,7 @@ function closeContract() {
 
             <div class="rental-card-actions">
         <button
-  v-if="['ongoing', 'overdue'].includes(booking.status)"
+  v-if="['ongoing', 'overdue'].includes(booking.status) && daysUntilReturn(booking.return_date) <= 0"
   class="rental-gold-button"
   type="button"
   :disabled="

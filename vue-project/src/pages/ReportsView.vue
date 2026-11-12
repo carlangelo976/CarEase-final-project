@@ -12,6 +12,7 @@ import { peso } from '@/lib/format'
 import AppShell from '@/components/AppShell.vue'
 
 const { isDark } = useTheme()
+const reportYear = ref(new Date().getFullYear())
 
 const statusKeys: BookingStatus[] = [
   'pending',
@@ -497,7 +498,11 @@ function exportCsv() {
   >
     <div class="heading">
       <h1>CarEase Reports &amp; Charts</h1>
-      <router-link class="button" to="/admin">Back to Admin</router-link>
+      <div class="ce-report-actions">
+        <label class="ce-year-picker">Report year <input v-model.number="reportYear" type="number" min="2020" max="2100" step="1" /></label>
+        <a class="button ce-pdf-button" :href="`/carease/admin/reports/annual-pdf?year=${reportYear}`" target="_blank" rel="noopener noreferrer">View Annual PDF</a>
+        <router-link class="button" to="/admin">Back to Admin</router-link>
+      </div>
     </div>
 
     <div class="ce-report-stats">
@@ -592,3 +597,15 @@ function exportCsv() {
     </section>
   </AppShell>
 </template>
+
+<style scoped>
+.ce-report-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.ce-pdf-button { background: linear-gradient(110deg, #0e365a, #167fc4) !important; color: #fff !important; border-color: #167fc4 !important; text-decoration: none; }
+.ce-pdf-button:hover { filter: brightness(1.12); }
+@media (max-width: 600px) { .ce-report-actions { width: 100%; } }
+</style>
+
+<style scoped>
+.ce-year-picker { display: inline-flex; align-items: center; gap: 8px; color: inherit; font-size: 13px; font-weight: 600; }
+.ce-year-picker input { width: 90px; padding: 8px 10px; border: 1px solid #aebdcc; border-radius: 8px; background: var(--surface, #fff); color: inherit; }
+</style>

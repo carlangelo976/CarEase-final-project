@@ -608,6 +608,9 @@ class CarEaseApi extends Controller
                 $booking['has_pending_checkout'] =
                     $summary['has_pending_checkout'];
 
+                $booking['payment_verification_unavailable'] =
+                    $summary['verification_unavailable'];
+
                     
                 $returnRequest = $this->CarEaseModel->returnRequest(
                     (int) $booking['id']
@@ -1078,6 +1081,9 @@ class CarEaseApi extends Controller
 
                 $booking['has_pending_checkout'] =
                     $summary['has_pending_checkout'];
+
+                $booking['payment_verification_unavailable'] =
+                    $summary['verification_unavailable'];
 
                     
                 $returnRequest = $this->CarEaseModel->returnRequest(
@@ -1620,6 +1626,14 @@ class CarEaseApi extends Controller
             }
         }
 
+        if ($status === 'completed') {
+            $returnRequest = $this->CarEaseModel->returnRequest($id);
+            if (!$returnRequest || ($returnRequest['status'] ?? '') !== 'pending') {
+                $this->respond(['error' => 'A pending client return request is required.'], 422);
+                return;
+            }
+        }
+
         if ($status === 'ongoing' || $status === 'completed') {
             $needed = $status === 'ongoing' ? 'pre' : 'post';
             $found = false;
@@ -2026,10 +2040,19 @@ class CarEaseApi extends Controller
         $downpayment = (int) round($total * 0.30);
         $paid = 0;
         $pending = false;
+        $verificationUnavailable = false;
         $rows = $this->CarEaseModel->paymentsForBooking((int) $booking['id']) ?: [];
 
         foreach ($rows as $payment) {
-            $status = $this->verifyPayment($payment);
+            // Keep previously verified payments intact when PayMongo is unavailable.
+            // Never infer a successful payment from an unreachable checkout.
+            try {
+                $status = $this->verifyPayment($payment);
+            } catch (Throwable $e) {
+                error_log('CarEase payment verification booking #' . (int) $booking['id'] . ', payment #' . (int) ($payment['id'] ?? 0) . ': ' . $e->getMessage());
+                $status = (string) ($payment['status'] ?? 'pending');
+                $verificationUnavailable = true;
+            }
             if ($status === 'paid') {
                 $paid += (int) $payment['amount_centavos'];
             } elseif ($status === 'pending') {
@@ -2055,7 +2078,8 @@ class CarEaseApi extends Controller
             'paid_centavos' => $paid,
             'remaining_centavos' => $remaining,
             'has_pending_checkout' => $pending,
-            'payment_status' => $paymentStatus
+            'payment_status' => $paymentStatus,
+            'verification_unavailable' => $verificationUnavailable
         ];
 
     }
@@ -2266,6 +2290,11 @@ class CarEaseApi extends Controller
             $this->respond([
                 'error' => 'Vehicle return is only available for ongoing or overdue rentals.'
             ], 422);
+            return;
+        }
+
+        if (date('Y-m-d') < substr((string) $booking['return_date'], 0, 10)) {
+            $this->respond(['error' => 'Return is available on the final rental day.'], 422);
             return;
         }
 
